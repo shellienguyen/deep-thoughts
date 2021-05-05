@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 // import ApolloServer
 const { ApolloServer } = require('apollo-server-express');
@@ -18,12 +19,35 @@ const server = new ApolloServer({
   context: authMiddleware
 });
 
-
 // integrate our Apollo server with the Express application as middleware
 server.applyMiddleware({ app });
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+
+// For PRODUCTION
+// Serve up static assets
+/*
+Check to see if the Node environment is in production. If it is, instruct the
+Express.js server to serve any files in the React application's build directory
+in the client folder. There isn't a build folder yet—because remember, that's
+for production only!
+*/
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/build')));
+}
+
+// For PRODUCTION
+/*
+Wildcard GET route for the server. In other words, if we make a GET request
+to any location on the server that doesn't have an explicit route defined,
+respond with the production-ready React front-end code.
+*/
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
+});
+
 
 db.once('open', () => {
   app.listen(PORT, () => {
