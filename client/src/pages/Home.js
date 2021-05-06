@@ -3,8 +3,10 @@ import React from 'react';
 //This will allow us to make requests to the GraphQL server we connected to
 //and made available to the application using the <ApolloProvider> component in App.js
 import { useQuery } from '@apollo/react-hooks';
-import { QUERY_THOUGHTS } from '../utils/queries';
+import { QUERY_THOUGHTS, QUERY_ME_BASIC } from '../utils/queries';
 import ThoughtList from '../components/ThoughtList';
+import Auth from '../utils/auth';
+import FriendList from '../components/FriendList';
 
 
 const Home = () => {
@@ -21,6 +23,14 @@ const Home = () => {
   const { loading, data } = useQuery(QUERY_THOUGHTS);
 
   /*
+  Use object destructuring to extract `data` from the `useQuery` Hook's
+  response and rename it `userData` to be more descriptive.  If the user is logged
+  in and has a valid token, userData will hold all of the returned information
+  from our query.
+  */
+  const { data: userData } = useQuery(QUERY_ME_BASIC);
+
+  /*
   This syntax is called optional chaining, and it's new to JavaScript—so new
   that only browsers seem to support it. If we tried to use it in a Node server,
   we'd receive a syntax error, because Node doesn't know what it is yet. Optional
@@ -33,21 +43,37 @@ const Home = () => {
   */
   const thoughts = data?.thoughts || [];
   console.log(thoughts);
+  const loggedIn = Auth.loggedIn();
 
   return (
     <main>
       <div className='flex-row justify-space-between'>
-        <div className='col-12 mb-3'>
+        {/*If the user isn't logged in, it'll span the full width of the row.
+        But if the user is logged in, it'll only span eight columns, leaving space
+        for a four-column <div> on the righthand side. */}
+        <div className={`col-12 mb-3 ${loggedIn && 'col-lg-8'}`}>
           {/* PRINT THOUGHT LIST */}
           {/* If the query hasn't completed and loading is still defined,
           we display a message to indicate just that. Once the query is complete
           and loading is undefined, we pass the thoughts array and a custom title
           to the <ThoughtList> component as props.
           */}
-          {loading ? ( <div>Loading...</div> ) : (
+          {loading ? (
+            <div>Loading...</div>
+          ) : (
             <ThoughtList thoughts={thoughts} title="Some Feed for Thought(s)..." />
           )}
         </div>
+
+        {loggedIn && userData ? (
+          <div className="col-12 col-lg-3 mb-3">
+            <FriendList
+              username={userData.me.username}
+              friendCount={userData.me.friendCount}
+              friends={userData.me.friends}
+            />
+          </div>
+        ) : null}
       </div>
     </main>
   );
