@@ -7,6 +7,7 @@ import { QUERY_THOUGHTS, QUERY_ME_BASIC } from '../utils/queries';
 import ThoughtList from '../components/ThoughtList';
 import Auth from '../utils/auth';
 import FriendList from '../components/FriendList';
+import ThoughtForm from '../components/ThoughtForm';
 
 
 const Home = () => {
@@ -48,6 +49,9 @@ const Home = () => {
   return (
     <main>
       <div className='flex-row justify-space-between'>
+        {/* If the user is logged in then display ThoughtForm */}
+        {loggedIn && ( <div className="col-12 mb-3"><ThoughtForm /></div> )}
+
         {/*If the user isn't logged in, it'll span the full width of the row.
         But if the user is logged in, it'll only span eight columns, leaving space
         for a four-column <div> on the righthand side. */}
@@ -58,20 +62,16 @@ const Home = () => {
           and loading is undefined, we pass the thoughts array and a custom title
           to the <ThoughtList> component as props.
           */}
-          {loading ? (
-            <div>Loading...</div>
-          ) : (
+          {loading ? ( <div>Loading...</div> ) : (
             <ThoughtList thoughts={thoughts} title="Some Feed for Thought(s)..." />
           )}
         </div>
 
+        {/* If the user is logged in then display the FriendList */}
         {loggedIn && userData ? (
-          <div className="col-12 col-lg-3 mb-3">
-            <FriendList
-              username={userData.me.username}
-              friendCount={userData.me.friendCount}
-              friends={userData.me.friends}
-            />
+          <div className="col-12 col-lg-3 mb-3"><FriendList username={userData.me.username}
+                                                            friendCount={userData.me.friendCount}
+                                                            friends={userData.me.friends} />
           </div>
         ) : null}
       </div>
